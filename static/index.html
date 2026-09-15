@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HandSigns — yes, no, okay interpreter</title>
+  <meta name="description" content="Webcam interpreter for a small set of communicative hand signs. Plug the widget into any website.">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <a class="skip" href="#interpreter">Skip to interpreter</a>
+  <header>
+    <div class="brand">HandSigns</div>
+    <nav>
+      <a href="#guide">Signs</a>
+      <a href="#embed">Embed</a>
+      <a href="#api">API</a>
+    </nav>
+  </header>
+  <main>
+    <h1>A small interpreter for yes, no, and okay.</h1>
+    <p class="lede">
+      Hold a thumbs up, thumbs down, or OK circle in the camera.
+      The widget reads 21 hand landmarks in the browser and names the sign.
+      Nothing is uploaded.
+    </p>
+
+    <div class="layout">
+      <section id="interpreter">
+        <h2>Live camera</h2>
+        <hand-signs speak></hand-signs>
+        <p class="note">The first visit downloads an ~8 MB hand model (progress shows under Start camera). After that, the camera opens right away. Use a plain background and keep the hand large in the frame.</p>
+      </section>
+
+      <aside class="panel" id="guide">
+        <h2>Supported signs</h2>
+        <div class="signs">
+          <article class="sign">
+            <div class="badge yes">YES</div>
+            <p><strong>Thumbs up</strong> Fold four fingers. Point the thumb straight up.</p>
+          </article>
+          <article class="sign">
+            <div class="badge no">NO</div>
+            <p><strong>Thumbs down</strong> Fold four fingers. Point the thumb straight down.</p>
+          </article>
+          <article class="sign">
+            <div class="badge okay">OKAY</div>
+            <p><strong>OK circle</strong> Touch thumb tip to index tip. Keep the other three fingers up.</p>
+          </article>
+          <article class="sign">
+            <div class="badge">HELLO</div>
+            <p><strong>Open palm</strong> All fingers extended, palm toward the camera.</p>
+          </article>
+          <article class="sign">
+            <div class="badge">PEACE</div>
+            <p><strong>V sign</strong> Index and middle up; ring and pinky folded.</p>
+          </article>
+          <article class="sign">
+            <div class="badge">POINT</div>
+            <p><strong>Index up</strong> Only the index finger extended.</p>
+          </article>
+          <article class="sign">
+            <div class="badge">FIST</div>
+            <p><strong>Closed hand</strong> All fingers folded.</p>
+          </article>
+          <article class="sign">
+            <div class="badge">ILY</div>
+            <p><strong>I love you</strong> Thumb, index, and pinky extended (ASL).</p>
+          </article>
+        </div>
+      </aside>
+    </div>
+
+    <section id="embed">
+      <h2>Plug into a website</h2>
+      <p>Drop in one script and one custom element. Recognition runs on the visitor’s machine.</p>
+      <pre><code>&lt;script type="module" src="/static/handsigns-widget.js"&gt;&lt;/script&gt;
+&lt;hand-signs speak&gt;&lt;/hand-signs&gt;
+
+&lt;script type="module"&gt;
+  const el = document.querySelector("hand-signs");
+  el.addEventListener("signchange", (event) =&gt; {
+    console.log(event.detail.sign, event.detail.confidence);
+  });
+&lt;/script&gt;</code></pre>
+    </section>
+
+    <section id="api">
+      <h2>Python / OpenCV API</h2>
+      <p>
+        The same classifier is available as a REST endpoint for still images
+        (OpenCV decode + MediaPipe landmarks).
+      </p>
+      <pre><code>curl -F "file=@hand.jpg" http://127.0.0.1:8000/api/recognize</code></pre>
+      <p class="note">See README.md for the webcam demo, JSON schema, and how to call this from your own backend.</p>
+    </section>
+  </main>
+  <footer>
+    HandSigns is a starter module, not a full sign-language translator.
+    It covers a handful of held poses used for basic yes / no / okay communication.
+  </footer>
+  <script type="module" src="/static/handsigns-widget.js"></script>
+</body>
+</html>
