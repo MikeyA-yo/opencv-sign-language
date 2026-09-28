@@ -17,7 +17,7 @@ def run_webcam(camera: int = 0, mirror: bool = True) -> None:
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
     with HandSignRecognizer(video_mode=True, smooth=True) as rec:
-        print("HandSigns webcam. Hold YES (thumbs up), NO (thumbs down), or OKAY. Press Q to quit.")
+        print("HandSigns webcam. Hold a sign still. Press Q to quit.")
         while True:
             ok, frame = cap.read()
             if not ok:

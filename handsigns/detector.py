@@ -13,7 +13,9 @@ from .model import ensure_model
 try:
     import cv2
 except ImportError as exc:  # pragma: no cover
-    raise SystemExit("opencv-python is required: pip install opencv-python") from exc
+    from .deps import INSTALL_HINT
+
+    raise SystemExit(INSTALL_HINT) from exc
 
 
 class HandDetector:

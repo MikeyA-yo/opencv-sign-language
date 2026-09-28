@@ -21,6 +21,12 @@ Python was chosen over C, C++, and TensorFlow.js-from-scratch because OpenCV + M
 | POINT | Index up, others folded | Pointing / one |
 | FIST | Closed hand | Closed hand |
 | I LOVE YOU | Thumb, index, and pinky extended (ASL) | I love you |
+| CALL ME | Thumb and pinky out (phone) | Call me |
+| LATER | Thumb out + index up (letter L) | Later |
+| THREE | Index, middle, ring up | Three |
+| FOUR | Four fingers up, thumb tucked | Four |
+| ROCK | Index and pinky up, thumb tucked | Rock on |
+| PROMISE | Only pinky up | Promise / pinky swear |
 
 Primary target: **YES / NO / OKAY**. Hold the pose still for about half a second (the smoother ignores one-frame flickers). Dynamic signs (nodding a fist, waving) are out of scope.
 
@@ -47,10 +53,19 @@ Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). The widget starts downloa
 ### OpenCV desktop window
 
 ```bash
+.venv\Scripts\activate
 python -m handsigns webcam
 ```
 
-Mirror view, skeleton overlay, large caption. Press **Q** to quit.
+Or, from the project folder, even with the system Python:
+
+```bash
+python webcam.py
+```
+
+That launcher switches to `.venv` automatically if the current interpreter does not have OpenCV (`cv2`). Mirror view, skeleton overlay, large caption. Press **Q** to quit.
+
+If you still see `cv2` / OpenCV missing, you are not in the project venv. Activate it (`.\.venv\Scripts\activate`) then `pip install -r requirements.txt`.
 
 ### Classify a still image
 

@@ -203,15 +203,59 @@ def classify_hand(hand: HandLandmarks, min_confidence: float = MIN_CONFIDENCE) -
     if thumb_on > 0.35 and idx_on > 0.4 and pinky_on > 0.4 and mid_off > 0.35 and ring_off > 0.35:
         candidates.append(("ily", ily))
 
+    # Call me: thumb + pinky only (phone handset / hang loose).
+    call = (thumb_on + pinky_on + idx_off + mid_off + ring_off) / 5.0
+    if thumb_on > 0.35 and pinky_on > 0.4 and idx_off > 0.35 and mid_off > 0.35 and ring_off > 0.35:
+        candidates.append(("call", call))
+
+    # Rock on: index + pinky, thumb not clearly extended (distinct from ILY).
+    if idx_on > 0.4 and pinky_on > 0.4 and f["thumb"] < THUMB_EXT_ON and mid_off > 0.35 and ring_off > 0.35:
+        rock = (idx_on + pinky_on + (1.0 - f["thumb"]) + mid_off + ring_off) / 5.0
+        candidates.append(("rock", rock))
+
+    # Later / letter L: thumb + index, other fingers folded.
+    later = (thumb_on + idx_on + mid_off + ring_off + pinky_off) / 5.0
+    if (
+        thumb_on > 0.35
+        and idx_on > 0.45
+        and mid_off > 0.4
+        and ring_off > 0.4
+        and pinky_off > 0.4
+        and pinch < 0.4
+    ):
+        candidates.append(("later", later))
+
+    # Promise: only pinky up.
+    if pinky_on > 0.5 and idx_off > 0.4 and mid_off > 0.4 and ring_off > 0.4 and f["thumb"] < THUMB_EXT_ON:
+        promise = (pinky_on + idx_off + mid_off + ring_off + (1.0 - f["thumb"])) / 5.0
+        candidates.append(("promise", promise))
+
+    # Three: index + middle + ring, pinky folded.
+    three = (idx_on + mid_on + ring_on + pinky_off) / 4.0
+    if idx_on > 0.45 and mid_on > 0.45 and ring_on > 0.4 and pinky_off > 0.35 and pinch < 0.4:
+        candidates.append(("three", three))
+
     # Peace: index + middle up, ring + pinky folded. Thumb may be tucked or relaxed.
     peace = (idx_on + mid_on + ring_off + pinky_off) / 4.0
     if idx_on > 0.45 and mid_on > 0.45 and ring_off > 0.35 and pinky_off > 0.35 and pinch < 0.4:
         candidates.append(("peace", peace))
 
-    # Point: only index up.
-    point = (idx_on + mid_off + ring_off + pinky_off) / 4.0
-    if idx_on > 0.5 and mid_off > 0.4 and ring_off > 0.4 and pinky_off > 0.4 and pinch < 0.4:
+    # Point: only index up, thumb not making an L.
+    if (
+        idx_on > 0.5
+        and mid_off > 0.4
+        and ring_off > 0.4
+        and pinky_off > 0.4
+        and f["thumb"] < THUMB_EXT_ON
+        and pinch < 0.4
+    ):
+        point = (idx_on + mid_off + ring_off + pinky_off + (1.0 - f["thumb"])) / 5.0
         candidates.append(("point", point))
+
+    # Four: four fingers up, thumb not clearly extended (distinct from HELLO).
+    four = (idx_on + mid_on + ring_on + pinky_on) / 4.0
+    if four > 0.55 and f["thumb"] < THUMB_EXT_ON and pinch < 0.35:
+        candidates.append(("four", 0.7 * four + 0.3 * (1.0 - f["thumb"])))
 
     # YES: thumbs up, other fingers folded, thumb pointing up.
     yes = 0.4 * thumb_on + 0.35 * others_off + 0.25 * up
@@ -223,15 +267,19 @@ def classify_hand(hand: HandLandmarks, min_confidence: float = MIN_CONFIDENCE) -
     if thumb_on > 0.35 and others_off > 0.45 and down > 0.45 and pinch < 0.5:
         candidates.append(("no", no))
 
-    # Open palm / hello: four fingers extended, no pinch.
+    # Open palm / hello: four fingers plus a visible thumb.
     hello = (idx_on + mid_on + ring_on + pinky_on) / 4.0
-    if hello > 0.55 and pinch < 0.35:
+    if hello > 0.55 and f["thumb"] >= THUMB_EXT_ON and pinch < 0.35:
         candidates.append(("hello", 0.7 * hello + 0.3 * max(thumb_on, 0.4)))
 
-    # Fist: four fingers folded and the thumb is not clearly extended.
-    # A tucked thumb can still point "up" in image space, so do not use
-    # thumb direction here — thumbs-up already requires thumb_on + verticality.
-    if others_off > 0.55 and f["thumb"] < THUMB_EXT_ON:
+    # Fist: all four fingers folded and the thumb is not a thumbs-up.
+    if (
+        idx_off > 0.4
+        and mid_off > 0.4
+        and ring_off > 0.4
+        and pinky_off > 0.4
+        and f["thumb"] < THUMB_EXT_ON
+    ):
         fist = 0.65 * others_off + 0.35 * (1.0 - f["thumb"])
         candidates.append(("fist", fist))
 

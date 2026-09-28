@@ -49,6 +49,13 @@ def _fold(pts: list[list[float]], mcp: int, pip: int, dip: int, tip: int) -> Non
     pts[tip] = [base[0] * 0.45 + wrist[0] * 0.55, base[1] * 0.3 + wrist[1] * 0.7]
 
 
+def _tuck_thumb(pts: list[list[float]]) -> None:
+    """Fold the thumb across the palm, not a thumbs-up."""
+    pts[2] = [0.44, 0.72]
+    pts[3] = [0.47, 0.68]
+    pts[4] = [0.49, 0.64]
+
+
 def _hand(pts: list[list[float]]):
     return landmarks_from_xy((tuple(p) for p in pts), handedness="Right")
 
@@ -94,7 +101,7 @@ class ClassifierTests(unittest.TestCase):
         pts = _base_palm()
         _fold(pts, 13, 14, 15, 16)
         _fold(pts, 17, 18, 19, 20)
-        pts[4] = [0.34, 0.62]
+        _tuck_thumb(pts)
         result = classify_hand(_hand(pts))
         self.assertEqual(result.sign, "peace", result)
 
@@ -103,7 +110,7 @@ class ClassifierTests(unittest.TestCase):
         _fold(pts, 9, 10, 11, 12)
         _fold(pts, 13, 14, 15, 16)
         _fold(pts, 17, 18, 19, 20)
-        pts[4] = [0.34, 0.62]
+        _tuck_thumb(pts)
         result = classify_hand(_hand(pts))
         self.assertEqual(result.sign, "point", result)
 
@@ -111,9 +118,7 @@ class ClassifierTests(unittest.TestCase):
         pts = _base_palm()
         for mcp, pip, dip, tip in ((5, 6, 7, 8), (9, 10, 11, 12), (13, 14, 15, 16), (17, 18, 19, 20)):
             _fold(pts, mcp, pip, dip, tip)
-        pts[2] = [0.42, 0.70]
-        pts[3] = [0.46, 0.64]
-        pts[4] = [0.50, 0.60]
+        _tuck_thumb(pts)
         result = classify_hand(_hand(pts))
         self.assertEqual(result.sign, "fist", result)
 
@@ -126,6 +131,58 @@ class ClassifierTests(unittest.TestCase):
         pts[4] = [0.22, 0.52]
         result = classify_hand(_hand(pts))
         self.assertEqual(result.sign, "ily", result)
+
+    def test_call_me(self) -> None:
+        pts = _base_palm()
+        _fold(pts, 5, 6, 7, 8)
+        _fold(pts, 9, 10, 11, 12)
+        _fold(pts, 13, 14, 15, 16)
+        pts[2] = [0.32, 0.66]
+        pts[3] = [0.26, 0.58]
+        pts[4] = [0.20, 0.50]
+        result = classify_hand(_hand(pts))
+        self.assertEqual(result.sign, "call", result)
+
+    def test_later_l_shape(self) -> None:
+        pts = _base_palm()
+        _fold(pts, 9, 10, 11, 12)
+        _fold(pts, 13, 14, 15, 16)
+        _fold(pts, 17, 18, 19, 20)
+        pts[2] = [0.32, 0.70]
+        pts[3] = [0.24, 0.68]
+        pts[4] = [0.16, 0.66]
+        result = classify_hand(_hand(pts))
+        self.assertEqual(result.sign, "later", result)
+
+    def test_three(self) -> None:
+        pts = _base_palm()
+        _fold(pts, 17, 18, 19, 20)
+        _tuck_thumb(pts)
+        result = classify_hand(_hand(pts))
+        self.assertEqual(result.sign, "three", result)
+
+    def test_four(self) -> None:
+        pts = _base_palm()
+        _tuck_thumb(pts)
+        result = classify_hand(_hand(pts))
+        self.assertEqual(result.sign, "four", result)
+
+    def test_rock(self) -> None:
+        pts = _base_palm()
+        _fold(pts, 9, 10, 11, 12)
+        _fold(pts, 13, 14, 15, 16)
+        _tuck_thumb(pts)
+        result = classify_hand(_hand(pts))
+        self.assertEqual(result.sign, "rock", result)
+
+    def test_promise(self) -> None:
+        pts = _base_palm()
+        _fold(pts, 5, 6, 7, 8)
+        _fold(pts, 9, 10, 11, 12)
+        _fold(pts, 13, 14, 15, 16)
+        _tuck_thumb(pts)
+        result = classify_hand(_hand(pts))
+        self.assertEqual(result.sign, "promise", result)
 
 
 if __name__ == "__main__":

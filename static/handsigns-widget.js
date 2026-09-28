@@ -31,6 +31,12 @@ const SIGNS = {
   point: { label: "POINT", meaning: "Pointing / one" },
   fist: { label: "FIST", meaning: "Closed hand" },
   ily: { label: "I LOVE YOU", meaning: "I love you (ASL)" },
+  call: { label: "CALL ME", meaning: "Call me / phone" },
+  later: { label: "LATER", meaning: "Later / letter L" },
+  three: { label: "THREE", meaning: "Three" },
+  four: { label: "FOUR", meaning: "Four" },
+  rock: { label: "ROCK", meaning: "Rock on" },
+  promise: { label: "PROMISE", meaning: "Promise / pinky swear" },
   none: { label: "—", meaning: "No recognized sign" },
 };
 
@@ -95,6 +101,11 @@ video { opacity: 0.92; }
 .word.yes { color: #7dffa8; }
 .word.no { color: #ff8d85; }
 .word.okay { color: #8fe3ff; }
+.word.call { color: #9dffb0; }
+.word.later { color: #ffe08a; }
+.word.three, .word.four { color: #d7c4ff; }
+.word.rock { color: #ffb4e0; }
+.word.promise { color: #b8e0ff; }
 .meta {
   color: #f0e6d6;
   font-size: 0.92rem;
@@ -210,7 +221,6 @@ function classify(lm, minConf = MIN_CONF) {
   const p = pinch(lm);
   const [up, down] = thumbDir(lm);
   const thumbOn = clamp((f.thumb - THUMB_EXT_ON) / (1 - THUMB_EXT_ON));
-  const thumbOff = off(f.thumb);
   const idxOn = on(f.index), idxOff = off(f.index);
   const midOn = on(f.middle), midOff = off(f.middle);
   const ringOn = on(f.ring), ringOff = off(f.ring);
@@ -227,14 +237,41 @@ function classify(lm, minConf = MIN_CONF) {
     cands.push(["ily", ily]);
   }
 
+  const call = (thumbOn + pinkyOn + idxOff + midOff + ringOff) / 5;
+  if (thumbOn > 0.35 && pinkyOn > 0.4 && idxOff > 0.35 && midOff > 0.35 && ringOff > 0.35) {
+    cands.push(["call", call]);
+  }
+
+  if (idxOn > 0.4 && pinkyOn > 0.4 && f.thumb < THUMB_EXT_ON && midOff > 0.35 && ringOff > 0.35) {
+    cands.push(["rock", (idxOn + pinkyOn + (1 - f.thumb) + midOff + ringOff) / 5]);
+  }
+
+  const later = (thumbOn + idxOn + midOff + ringOff + pinkyOff) / 5;
+  if (thumbOn > 0.35 && idxOn > 0.45 && midOff > 0.4 && ringOff > 0.4 && pinkyOff > 0.4 && p < 0.4) {
+    cands.push(["later", later]);
+  }
+
+  if (pinkyOn > 0.5 && idxOff > 0.4 && midOff > 0.4 && ringOff > 0.4 && f.thumb < THUMB_EXT_ON) {
+    cands.push(["promise", (pinkyOn + idxOff + midOff + ringOff + (1 - f.thumb)) / 5]);
+  }
+
+  const three = (idxOn + midOn + ringOn + pinkyOff) / 4;
+  if (idxOn > 0.45 && midOn > 0.45 && ringOn > 0.4 && pinkyOff > 0.35 && p < 0.4) {
+    cands.push(["three", three]);
+  }
+
   const peace = (idxOn + midOn + ringOff + pinkyOff) / 4;
   if (idxOn > 0.45 && midOn > 0.45 && ringOff > 0.35 && pinkyOff > 0.35 && p < 0.4) {
     cands.push(["peace", peace]);
   }
 
-  const point = (idxOn + midOff + ringOff + pinkyOff) / 4;
-  if (idxOn > 0.5 && midOff > 0.4 && ringOff > 0.4 && pinkyOff > 0.4 && p < 0.4) {
-    cands.push(["point", point]);
+  if (idxOn > 0.5 && midOff > 0.4 && ringOff > 0.4 && pinkyOff > 0.4 && f.thumb < THUMB_EXT_ON && p < 0.4) {
+    cands.push(["point", (idxOn + midOff + ringOff + pinkyOff + (1 - f.thumb)) / 5]);
+  }
+
+  const four = (idxOn + midOn + ringOn + pinkyOn) / 4;
+  if (four > 0.55 && f.thumb < THUMB_EXT_ON && p < 0.35) {
+    cands.push(["four", 0.7 * four + 0.3 * (1 - f.thumb)]);
   }
 
   const yes = 0.4 * thumbOn + 0.35 * othersOff + 0.25 * up;
@@ -244,9 +281,11 @@ function classify(lm, minConf = MIN_CONF) {
   if (thumbOn > 0.35 && othersOff > 0.45 && down > 0.45 && p < 0.5) cands.push(["no", no]);
 
   const hello = (idxOn + midOn + ringOn + pinkyOn) / 4;
-  if (hello > 0.55 && p < 0.35) cands.push(["hello", 0.7 * hello + 0.3 * Math.max(thumbOn, 0.4)]);
+  if (hello > 0.55 && f.thumb >= THUMB_EXT_ON && p < 0.35) {
+    cands.push(["hello", 0.7 * hello + 0.3 * Math.max(thumbOn, 0.4)]);
+  }
 
-  if (othersOff > 0.55 && f.thumb < THUMB_EXT_ON) {
+  if (idxOff > 0.4 && midOff > 0.4 && ringOff > 0.4 && pinkyOff > 0.4 && f.thumb < THUMB_EXT_ON) {
     cands.push(["fist", 0.65 * othersOff + 0.35 * (1 - f.thumb)]);
   }
 

@@ -22,7 +22,7 @@ class ApiTests(unittest.TestCase):
         res = self.client.get("/api/signs")
         self.assertEqual(res.status_code, 200)
         ids = {item["id"] for item in res.json()["signs"]}
-        self.assertTrue({"yes", "no", "okay"}.issubset(ids))
+        self.assertTrue({"yes", "no", "okay", "call", "later", "three", "four", "rock", "promise"}.issubset(ids))
 
     def test_demo_page(self) -> None:
         res = self.client.get("/")

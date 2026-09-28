@@ -5,10 +5,13 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-import cv2
+from .deps import reexec_in_venv_if_needed
 
 
 def main(argv: list[str] | None = None) -> None:
+    reexec_in_venv_if_needed()
+    import cv2
+
     parser = argparse.ArgumentParser(
         prog="handsigns",
         description="Recognize basic communicative hand signs (yes / no / okay).",
